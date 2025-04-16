@@ -1,4 +1,5 @@
-import pandas as pd 
+# Importing Necessary Libraries
+import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 
@@ -25,13 +26,11 @@ print(data['labels'].value_counts())
 # Importing required libraries for text processing
 import re
 import nltk
-nltk.download('stopwords')
+nltk.download('stopwords')  # Make sure you have the stopwords downloaded
+stemmer = nltk.SnowballStemmer("english")
 from nltk.corpus import stopwords
 import string
-from nltk.stem import SnowballStemmer
-
 stopword = set(stopwords.words('english'))
-stemmer = SnowballStemmer("english")
 
 # Cleaning Data
 def clean(text):
@@ -44,6 +43,7 @@ def clean(text):
     text = re.sub('\w*\d\w*', '', text)  # Remove words with numbers
     
     # Keep offensive words in the text for feature extraction
+    stopword = set(stopwords.words('english'))
     text = [word for word in text.split(' ') if word not in stopword]
     
     # Use stemming or lemmatization (if needed) but avoid stemming offensive words like 'bastard'
@@ -58,11 +58,6 @@ data["tweet"] = data["tweet"].apply(clean)
 # Feature Selection
 x = np.array(data["tweet"])
 y = np.array(data["labels"])
-
-# Encode labels as numbers
-from sklearn.preprocessing import LabelEncoder
-le = LabelEncoder()
-y = le.fit_transform(y)  # Convert labels to numerical values (0, 1, 2)
 
 # Model Selection
 cv = CountVectorizer()
@@ -91,16 +86,16 @@ def hate_speech_detection():
     else:
         # Preprocess the input and make the prediction
         sample = user
-        data = cv.transform([sample]).toarray()  # Transform input into the same format as training data
+        data = cv.transform([sample]).toarray()
         prediction = clf.predict(data)
         
-        # Map numeric prediction to original labels
-        prediction_label = le.inverse_transform(prediction)  # Convert numeric prediction back to text
-        st.write(f"Prediction: {prediction_label[0]}")
+        # Map numeric prediction to labels
+        prediction_label = prediction[0]  # Get the label
+        st.write(f"Prediction: {prediction_label}")
 
-        if prediction_label[0] == "Hate Speech":
+        if prediction_label == "Hate Speech":
             st.write("This tweet contains hate speech.")
-        elif prediction_label[0] == "Offensive Language":
+        elif prediction_label == "Offensive Language":
             st.write("This tweet contains offensive language.")
         else:
             st.write("This tweet does not contain hate or offensive language.")
